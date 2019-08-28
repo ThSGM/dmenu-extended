@@ -4,9 +4,10 @@
 import mock
 import pytest
 import sys
-from os import path
+import os
+import shutil
 
-sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) )
 import dmenu_extended as d
 
 menu = d.dmenu()
@@ -38,3 +39,23 @@ def test_command_to_list():
 def test_scan_binaries_file_in_system_path():
     with mock.patch.object(menu, 'system_path', new=lambda: [u'/bin', u'/bin/cp'] ):
         assert type(menu.scan_binaries()) == list
+
+def set_preference(prefs):
+    menu.prefs = d.default_prefs
+    for key in prefs:
+        menu.prefs[key] = prefs[key]
+
+@pytest.fixture
+def test_path():
+    test_path = os.path.dirname(os.path.abspath(__file__)) + '/test_path/'
+    if not os.path.isdir(test_path):
+        os.mkdir(test_path)
+    yield test_path
+    shutil.rmtree(test_path)
+
+def test_handle_unicode_paths(test_path):
+    test_filename = test_path + ".abc\x8b\x8bThis is a bad filename"
+    open(test_filename, 'w').close()
+    set_preference({"watch_folders": [test_path]})
+    menu.cache_build()
+    
