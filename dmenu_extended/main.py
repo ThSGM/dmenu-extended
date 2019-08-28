@@ -1047,6 +1047,9 @@ class dmenu(object):
         watch_folders = []
         if 'watch_folders' in self.prefs:
             watch_folders = self.prefs['watch_folders']
+            if type(watch_folders) != list:
+                watch_folders = [watch_folders]
+
         watch_folders = map(lambda x: x.replace('~', os.path.expanduser('~')), watch_folders)
 
         if self.debug:
